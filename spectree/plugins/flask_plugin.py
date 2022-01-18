@@ -60,16 +60,20 @@ class FlaskPlugin(BasePlugin):
                 continue
             subs.append(f"{{{variable}}}")
 
-            args, kwargs = [], {}
-
-            if arguments:
-                args, kwargs = parse_converter_args(arguments)
-
+            args, kwargs = parse_converter_args(arguments) if arguments else ([], {})
             schema = None
             if converter == "any":
                 schema = {
                     "type": "string",
                     "enum": args,
+                }
+            elif converter == "default":
+                schema = {"type": "string"}
+
+            elif converter == "float":
+                schema = {
+                    "type": "number",
+                    "format": "float",
                 }
             elif converter == "int":
                 schema = {
@@ -80,16 +84,6 @@ class FlaskPlugin(BasePlugin):
                     schema["maximum"] = kwargs["max"]
                 if "min" in kwargs:
                     schema["minimum"] = kwargs["min"]
-            elif converter == "float":
-                schema = {
-                    "type": "number",
-                    "format": "float",
-                }
-            elif converter == "uuid":
-                schema = {
-                    "type": "string",
-                    "format": "uuid",
-                }
             elif converter == "path":
                 schema = {
                     "type": "string",
@@ -102,9 +96,11 @@ class FlaskPlugin(BasePlugin):
                 for prop in ["length", "maxLength", "minLength"]:
                     if prop in kwargs:
                         schema[prop] = kwargs[prop]
-            elif converter == "default":
-                schema = {"type": "string"}
-
+            elif converter == "uuid":
+                schema = {
+                    "type": "string",
+                    "format": "uuid",
+                }
             description = (
                 path_parameter_descriptions.get(variable, "")
                 if path_parameter_descriptions

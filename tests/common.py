@@ -60,11 +60,7 @@ class DemoQuery(BaseModel):
 
 
 def get_paths(spec):
-    paths = []
-    for path in spec["paths"]:
-        if spec["paths"][path]:
-            paths.append(path)
-
+    paths = [path for path in spec["paths"] if spec["paths"][path]]
     paths.sort()
     return paths
 

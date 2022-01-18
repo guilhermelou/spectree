@@ -230,9 +230,7 @@ class FalconPlugin(BasePlugin):
         after(_req, _resp, resp_validation_error, _self)
 
     def bypass(self, func, method):
-        if isinstance(func, partial):
-            return True
-        return inspect.isfunction(func)
+        return True if isinstance(func, partial) else inspect.isfunction(func)
 
 
 class FalconAsgiPlugin(FalconPlugin):
