@@ -102,12 +102,9 @@ class Response:
 
         :returns: JSON
         """
-        responses: Dict[str, Any] = {}
-        for code in self.codes:
-            responses[parse_code(code)] = {
+        responses: Dict[str, Any] = {parse_code(code): {
                 "description": self.get_code_description(code)
-            }
-
+            } for code in self.codes}
         for code, model in self.code_models.items():
             model_name = get_model_key(model=model)
             responses[parse_code(code)] = {

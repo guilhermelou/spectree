@@ -39,9 +39,7 @@ def parse_comments(func: Callable[..., Any]) -> Tuple[Optional[str], Optional[st
         docstring_parts[i] = re.sub("\n+", " ", docstring_parts[i])
 
     summary = docstring_parts[0]
-    description = None
-    if len(docstring_parts) > 1:
-        description = docstring_parts[1]
+    description = docstring_parts[1] if len(docstring_parts) > 1 else None
 
     return summary, description
 
@@ -50,16 +48,13 @@ def parse_request(func):
     """
     get json spec
     """
-    data = {}
-    if hasattr(func, "json"):
-        data = {
+    return {
             "content": {
                 "application/json": {
                     "schema": {"$ref": f"#/components/schemas/{func.json}"}
                 }
             }
-        }
-    return data
+        } if hasattr(func, "json") else {}
 
 
 def parse_params(func, params, models):
@@ -99,11 +94,7 @@ def parse_resp(func):
     a ``422 Validation Error`` will be append to the response spec. Since
     this may be triggered in the validation step.
     """
-    responses = {}
-    if hasattr(func, "resp"):
-        responses = func.resp.generate_spec()
-
-    return responses
+    return func.resp.generate_spec() if hasattr(func, "resp") else {}
 
 
 def has_model(func):
@@ -198,13 +189,11 @@ def get_model_path_key(model_path: str):
     """
 
     model_path_parts = model_path.rsplit(".", 1)
-    if len(model_path_parts) > 1:
-        hashed_module_path = hash_module_path(module_path=model_path_parts[0])
-        model_path_key = f"{hashed_module_path}.{model_path_parts[1]}"
-    else:
-        model_path_key = model_path_parts[0]
+    if len(model_path_parts) <= 1:
+        return model_path_parts[0]
 
-    return model_path_key
+    hashed_module_path = hash_module_path(module_path=model_path_parts[0])
+    return f"{hashed_module_path}.{model_path_parts[1]}"
 
 
 def get_model_key(model: Type[BaseModel]) -> str:
